@@ -1,0 +1,304 @@
+<!DOCTYPE html>    
+<html lang="en">    
+<head>    
+    <meta charset="UTF-8">    
+    <title>Resource Manager Pro</title>    
+    <script src="data.js"></script>    
+    <style>      
+        :root {      
+            --bg: #f8fafc; --panel: #ffffff; --text-main: #1e293b; --text-sub: #64748b;      
+            --danger: #be123c; --warning: #d97706; --info: #1d4ed8; --success: #15803d;    
+            --accent: #6366f1;  
+        }      
+        body { font-family: 'Segoe UI', Tahoma, sans-serif; background: var(--bg); color: var(--text-main); padding: 20px; margin: 0; }      
+        .container { max-width: 1400px; margin: 0 auto; }    
+        
+        /* Attention Header */
+        .attention-bar { background: white; border-left: 4px solid var(--danger); border-radius: 8px; padding: 12px 20px; margin-bottom: 25px; display: none; box-shadow: 0 1px 3px rgba(0,0,0,0.1); align-items: center; justify-content: space-between; }    
+        .attention-bar.active { display: flex; }    
+        .crit-tag { background: #fff1f2; color: var(--danger); padding: 4px 10px; border-radius: 6px; font-size: 0.8rem; font-weight: 700; border: 1px solid #fecdd3; display: flex; align-items: center; gap: 6px; }    
+        
+        /* Dashboard Cards */
+        .analytics-top { display: grid; grid-template-columns: repeat(4, 1fr); gap: 15px; margin-bottom: 25px; }    
+        .ana-card { background: white; border-radius: 12px; padding: 15px; border: 1px solid #e2e8f0; height: 180px; display: flex; flex-direction: column; }    
+        .ana-card h3 { margin: 0 0 10px 0; font-size: 0.7rem; text-transform: uppercase; color: var(--text-sub); border-bottom: 1px solid #f1f5f9; padding-bottom: 5px; }    
+        .scroll-area { flex-grow: 1; overflow-y: auto; font-size: 0.85rem; }    
+        
+        /* Status Pills */
+        .status-pill { padding: 3px 8px; border-radius: 4px; font-size: 0.65rem; font-weight: 800; text-transform: uppercase; white-space: nowrap; }    
+        .status-active { background: #dcfce7; color: #166534; }    
+        .status-highload { background: #ffe4e6; color: #991b1b; }    
+        .status-onboarding { background: #dbeafe; color: #1e40af; }    
+        .status-leave { background: #f1f5f9; color: #475569; border: 1px solid #e2e8f0; }    
+        .status-inactive { background: #334155; color: white; }
+        
+        /* Tables & Sections */
+        .section-bar { background: #1e293b; color: white; padding: 12px 20px; border-radius: 8px; margin-top: 30px; display: flex; justify-content: space-between; font-weight: 700; }  
+        .team-header { background: #f1f5f9; padding: 8px 20px; margin-top: 10px; border-radius: 6px 6px 0 0; font-size: 0.8rem; font-weight: 700; color: #475569; border-bottom: 1px solid #e2e8f0; }    
+        .res-table { width: 100%; border-collapse: collapse; background: white; margin-bottom: 15px; border: 1px solid #e2e8f0; }    
+        .res-table th { background: #f8fafc; color: var(--text-sub); font-size: 0.65rem; text-transform: uppercase; padding: 10px 20px; text-align: left; }    
+        .res-table td { padding: 10px 20px; border-bottom: 1px solid #f1f5f9; font-size: 0.85rem; }    
+        .row-conflict { background-color: #fff1f2 !important; }  
+        
+        /* UI Elements */
+        .toolbar { display: flex; flex-direction: column; gap: 12px; margin-bottom: 20px; }    
+        .toolbar-top { display: flex; gap: 10px; }  
+        .pill-btn { padding: 6px 14px; border-radius: 20px; border: 1px solid #e2e8f0; background: white; font-size: 0.75rem; cursor: pointer; color: var(--text-sub); font-weight: 600; }  
+        .pill-btn.active { background: var(--accent); color: white; border-color: var(--accent); }  
+        .search-input { flex-grow: 1; padding: 10px 15px; border-radius: 8px; border: 1px solid #e2e8f0; }      
+        .btn { padding: 8px 16px; border-radius: 6px; border: none; font-weight: 600; cursor: pointer; font-size: 0.8rem; }      
+        .btn-main { background: #1e293b; color: white; }      
+        .btn-alt { background: #f1f5f9; color: #475569; }      
+        .btn-danger { background: #be123c; color: white; }
+
+        .modal { display:none; position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(15,23,42,0.6); z-index:9999; align-items:center; justify-content:center; }      
+        .modal-box { background:white; padding:25px; border-radius:12px; width:450px; box-shadow: 0 20px 25px -5px rgba(0,0,0,0.2); }      
+        .guide-box { background: #f8fafc; padding: 10px; border-radius: 6px; border: 1px solid #e2e8f0; font-size: 0.75rem; margin-bottom: 15px; line-height: 1.4; }
+        .copy-area { width: 100%; height: 200px; font-family: 'Courier New', monospace; font-size: 11px; padding: 10px; border: 1px solid #e2e8f0; border-radius: 6px; background: #fafafa; box-sizing: border-box; } 
+    </style>      
+</head>      
+<body>      
+
+<div class="container">      
+    <header style="display:flex; justify-content:space-between; align-items:center; margin-bottom:20px;">      
+        <div>    
+            <h2 style="margin:0; font-weight: 800; color:#1e293b;">Resource Manager</h2>      
+            <div id="last-updated" style="font-size: 0.7rem; color: var(--text-sub); margin-top: 4px;">Ready</div>    
+        </div>    
+        <div style="display:flex; gap:8px;">      
+            <button class="btn btn-alt" onclick="exportCSV()">Export CSV</button>      
+            <button class="btn btn-main" onclick="openExportModal()">Download data.js</button>      
+        </div>      
+    </header>      
+     
+    <div id="attention-bar" class="attention-bar">      
+        <div style="display:flex; align-items:center; gap:15px;">      
+            <span style="font-size:0.75rem; font-weight:800; color:var(--danger);">CAPACITY ALERTS:</span>      
+            <div id="critical-list" style="display:flex; gap:8px; flex-wrap:wrap;"></div>      
+        </div>      
+    </div>      
+     
+    <div class="analytics-top">      
+        <div class="ana-card"><h3>Sections (FTE)</h3><div id="section-stats" class="scroll-area"></div></div>      
+        <div class="ana-card"><h3>Status Distribution</h3><div id="status-stats" class="scroll-area"></div></div>      
+        <div class="ana-card"><h3>Vendor Allocation</h3><div id="vendor-stats" class="scroll-area"></div></div>      
+        <div class="ana-card"><h3>Top 5 Roles</h3><div id="role-stats" class="scroll-area"></div></div>      
+    </div>      
+     
+    <div class="toolbar">    
+        <div class="toolbar-top">  
+            <input type="text" id="search" class="search-input" placeholder="Search name, team, vendor, or role...">      
+            <button class="btn btn-main" onclick="openModal()">+ Add New</button>      
+        </div>  
+        <div class="filter-pills" id="filter-pills">  
+            <button class="pill-btn active" data-filter="all">Show All</button>  
+            <button class="pill-btn" data-filter="Active">Active</button>  
+            <button class="pill-btn" data-filter="High Load">High Load</button>  
+            <button class="pill-btn" data-filter="external">Vendors Only</button>  
+            <button class="pill-btn" data-filter="conflict">FTE Conflicts</button>  
+        </div>  
+    </div>      
+     
+    <div id="dashboard-content"></div>      
+</div>      
+     
+<div id="modal" class="modal"><div class="modal-box">      
+    <h3 id="modal-title" style="margin-top:0">Resource Details</h3>      
+    <div style="display:flex; flex-direction:column; gap:10px;">
+        <label style="font-size:0.7rem; font-weight:bold">NAME</label><input type="text" id="m-name" style="padding:8px">      
+        <label style="font-size:0.7rem; font-weight:bold">COMPANY (Vendor X or Internal)</label><input type="text" id="m-vendor" style="padding:8px">      
+        <label style="font-size:0.7rem; font-weight:bold">ROLE</label><input type="text" id="m-role" style="padding:8px">      
+        <label style="font-size:0.7rem; font-weight:bold">TEAM</label><input type="text" id="m-team" style="padding:8px">      
+        <div style="display:grid; grid-template-columns:1fr 1fr; gap:10px;">      
+            <div><label style="font-size:0.7rem; font-weight:bold">SECTION</label><select id="m-section" style="width:100%; padding:8px"><option value="Section 1">Section 1</option><option value="Section 2">Section 2</option><option value="Section 3">Section 3</option><option value="Section 4">Section 4</option></select></div>      
+            <div><label style="font-size:0.7rem; font-weight:bold">FTE</label><input type="number" id="m-fte" step="0.1" value="1.0" style="width:100%; padding:8px; box-sizing:border-box"></div>      
+        </div>      
+        <label style="font-size:0.7rem; font-weight:bold">STATUS</label>      
+        <select id="m-status" style="padding:8px">      
+            <option value="Active">Active</option>      
+            <option value="High Load">High Load</option>      
+            <option value="Onboarding">Onboarding</option>      
+            <option value="Leave">Leave</option>      
+            <option value="Inactive">Inactive</option>      
+        </select>      
+    </div>
+    <div style="display:flex; gap:10px; margin-top:20px;">      
+        <button class="btn btn-main" style="flex:1" onclick="saveEntry()">Save Resource</button>      
+        <button class="btn btn-alt" style="flex:1" onclick="closeModal()">Cancel</button>      
+    </div>      
+</div></div> 
+
+<div id="export-modal" class="modal"><div class="modal-box" style="width: 550px;">      
+    <h3 style="margin-top:0">Update Data Source</h3>      
+    <div class="guide-box">
+        <strong>Quick Start Guide:</strong><br>
+        1. Copy the code block below.<br>
+        2. Open your <code>data.js</code> file in a text editor.<br>
+        3. Replace all content with this code and save.<br>
+        4. Use <strong>"Internal"</strong> in the Company field for staff.
+    </div>
+    <textarea id="export-text" class="copy-area" readonly></textarea> 
+    <div style="display:flex; gap:10px; margin-top:15px;">
+        <button class="btn btn-main" style="flex:1" onclick="copyExportText()">Copy Code</button>      
+        <button class="btn btn-alt" style="flex:1" onclick="document.getElementById('export-modal').style.display='none'">Close</button>      
+    </div>
+</div></div> 
+     
+<script>      
+    let currentData = [];      
+    let editIndex = -1;
+    let activePill = 'all';  
+    const SECTIONS = ["Section 1", "Section 2", "Section 3", "Section 4"];
+     
+    function init() {      
+        const saved = localStorage.getItem('res_manager_v2');      
+        currentData = saved ? JSON.parse(saved) : (typeof rawData !== 'undefined' ? rawData : []);      
+        
+        document.querySelectorAll('.pill-btn').forEach(btn => {  
+            btn.addEventListener('click', () => {  
+                document.querySelectorAll('.pill-btn').forEach(b => b.classList.remove('active'));  
+                btn.classList.add('active');  
+                activePill = btn.getAttribute('data-filter');  
+                render();  
+            });  
+        });  
+        
+        document.getElementById('search').addEventListener('input', render);
+        render();      
+    }      
+     
+    function render() {      
+        const query = document.getElementById('search').value.toLowerCase();      
+        const personTotals = {};  
+        currentData.forEach(r => personTotals[r[0]] = (personTotals[r[0]] || 0) + parseFloat(r[5]));  
+
+        const bar = document.getElementById('attention-bar');      
+        const conflicts = Object.keys(personTotals).filter(n => personTotals[n] > 1.05);
+        if (conflicts.length > 0) {
+            bar.classList.add('active');
+            document.getElementById('critical-list').innerHTML = conflicts.map(n => `<div class="crit-tag">⚠️ ${n} (${personTotals[n].toFixed(1)} FTE)</div>`).join('');
+        } else { bar.classList.remove('active'); }
+
+        renderAnalytics();      
+        let html = "";      
+        SECTIONS.forEach(s => {      
+            const sRows = currentData.map((r, i) => ({r, i})).filter(x => {  
+                const matchesSearch = x.r.join(' ').toLowerCase().includes(query);  
+                const matchesSection = x.r[4] === s;  
+                let matchesPill = activePill === 'all' || 
+                                 (activePill === 'external' ? x.r[1] !== 'Internal' : 
+                                  activePill === 'conflict' ? personTotals[x.r[0]] > 1.05 : x.r[6] === activePill);  
+                return matchesSection && matchesSearch && matchesPill;  
+            });  
+            
+            if (sRows.length === 0) return;      
+            
+            const sectionTotal = sRows.reduce((a,x)=>a+parseFloat(x.r[5]),0).toFixed(1);  
+            html += `<div class="section-bar"><span>${s}</span><span>${sectionTotal} FTE</span></div>`;      
+            
+            const teams = [...new Set(sRows.map(x => x.r[3]))].sort();      
+            teams.forEach(t => {      
+                const tRows = sRows.filter(x => x.r[3] === t);      
+                html += `<div class="team-header">${t || 'Unassigned Team'}</div><table class="res-table"><thead><tr><th>Name</th><th>Company</th><th>Role</th><th>Status</th><th style="text-align:right">FTE</th><th style="text-align:right">Actions</th></tr></thead><tbody>`;      
+                tRows.forEach(x => {      
+                    const statusClass = x.r[6].toLowerCase().replace(' ', '');
+                    html += `<tr class="${personTotals[x.r[0]] > 1.05 ? 'row-conflict' : ''}">      
+                        <td><strong>${x.r[0]}</strong></td>      
+                        <td>${x.r[1]}</td><td>${x.r[2]}</td>      
+                        <td><span class="status-pill status-${statusClass}">${x.r[6]}</span></td>      
+                        <td style="text-align:right"><strong>${parseFloat(x.r[5]).toFixed(1)}</strong></td>      
+                        <td style="text-align:right">
+                            <button class="btn btn-alt" style="padding:2px 8px; font-size:0.7rem" onclick="editEntry(${x.i})">Edit</button>
+                            <button class="btn btn-danger" style="padding:2px 8px; font-size:0.7rem" onclick="deleteEntry(${x.i})">Del</button>
+                        </td>
+                    </tr>`;      
+                });      
+                html += `</tbody></table>`;      
+            });      
+        });      
+        document.getElementById('dashboard-content').innerHTML = html || '<div style="padding:40px; text-align:center; color:#94a3b8">No matching resources found.</div>';      
+    }      
+     
+    function renderAnalytics() {      
+        const vens = {}; currentData.forEach(r => vens[r[1]] = (vens[r[1]]||0) + parseFloat(r[5]));      
+        document.getElementById('vendor-stats').innerHTML = Object.entries(vens).sort((a,b)=>b[1]-a[1]).map(([k,v]) => `<div style="display:flex; justify-content:space-between; margin-bottom:2px"><span>${k}</span><b>${v.toFixed(1)}</b></div>`).join('');
+        
+        const stats = {}; currentData.forEach(r => stats[r[6]] = (stats[r[6]]||0) + 1);
+        document.getElementById('status-stats').innerHTML = Object.entries(stats).map(([k,v]) => `<div style="display:flex; justify-content:space-between; margin-bottom:2px"><span>${k}</span><b>${v}</b></div>`).join('');
+        
+        const roles = {}; currentData.forEach(r => roles[r[2]] = (roles[r[2]]||0) + 1);
+        document.getElementById('role-stats').innerHTML = Object.entries(roles).sort((a,b)=>b[1]-a[1]).slice(0,5).map(([k,v]) => `<div style="display:flex; justify-content:space-between; margin-bottom:2px"><span>${k}</span><b>${v}</b></div>`).join('');
+
+        const sect = {}; currentData.forEach(r => sect[r[4]] = (sect[r[4]]||0) + parseFloat(r[5]));
+        document.getElementById('section-stats').innerHTML = SECTIONS.map(s => `<div style="display:flex; justify-content:space-between; margin-bottom:2px"><span>${s}</span><b>${(sect[s]||0).toFixed(1)}</b></div>`).join('');
+    }      
+
+    function saveEntry() {      
+        const entry = [
+            document.getElementById('m-name').value || "Unnamed", 
+            document.getElementById('m-vendor').value || "Internal", 
+            document.getElementById('m-role').value || "N/A", 
+            document.getElementById('m-team').value || "General", 
+            document.getElementById('m-section').value, 
+            document.getElementById('m-fte').value || "1.0", 
+            document.getElementById('m-status').value
+        ];      
+        if(editIndex > -1) currentData[editIndex] = entry; 
+        else currentData.push(entry);
+
+        sync(); closeModal(); render();      
+    }      
+
+    function editEntry(index) {
+        editIndex = index;
+        const d = currentData[index];
+        document.getElementById('m-name').value = d[0];
+        document.getElementById('m-vendor').value = d[1];
+        document.getElementById('m-role').value = d[2];
+        document.getElementById('m-team').value = d[3];
+        document.getElementById('m-section').value = d[4];
+        document.getElementById('m-fte').value = d[5];
+        document.getElementById('m-status').value = d[6];
+        document.getElementById('modal-title').innerText = "Update Resource";
+        openModal();
+    }
+
+    function deleteEntry(index) {
+        if(confirm("Confirm deletion?")) {
+            currentData.splice(index, 1); sync(); render();
+        }
+    }
+
+    function sync() { localStorage.setItem('res_manager_v2', JSON.stringify(currentData)); }
+    function openModal() { document.getElementById('modal').style.display = 'flex'; }      
+    function closeModal() { 
+        document.getElementById('modal').style.display = 'none'; 
+        editIndex = -1; 
+        document.getElementById('modal-title').innerText = "Add New Resource";
+        document.querySelectorAll('.modal-box input').forEach(i => i.value = "");
+    }      
+    
+    function openExportModal() { 
+        document.getElementById('export-text').value = "const rawData = " + JSON.stringify(currentData, null, 4) + ";"; 
+        document.getElementById('export-modal').style.display = 'flex'; 
+    }
+    
+    function copyExportText() { 
+        document.getElementById('export-text').select(); 
+        document.execCommand('copy'); 
+        alert("Code copied! Now replace the content in your data.js file."); 
+    }
+    
+    function exportCSV() {      
+        let csv = "Name,Company,Role,Team,Section,FTE,Status\n";      
+        currentData.forEach(r => { csv += r.join(",") + "\n"; });      
+        const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });      
+        const link = document.createElement("a");
+        link.href = URL.createObjectURL(blob);
+        link.download = "resource_inventory.csv";
+        link.click();
+    }
+    window.onload = init;      
+</script>      
+</body>      
+</html>
