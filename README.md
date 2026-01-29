@@ -40,3 +40,6 @@ This project is designed with anonymity in mind - you can change all values, so 
 
 ## 📄 License
 MIT License - Feel free to use and modify for your own organizational needs.
+
+<img width="1443" height="1265" alt="image" src="https://github.com/user-attachments/assets/d45d2c86-243b-4758-aeae-4dc4d288b6df" />
+
