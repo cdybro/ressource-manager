@@ -19,7 +19,7 @@ A lightweight, web-based tool for managing organizational resources, tracking FT
 
 ### Local Development
 1. Open your terminal in the project folder.
-2. Run `open index.html` (Mac) or use the VS Code **Live Server** extension.
+2. Run `open index.html` (Mac) or use any browser etc. 
 3. The app will automatically load data from `data.js`.
 
 ### Updating Data
